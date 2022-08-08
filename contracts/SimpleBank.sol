@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.4;
 
-contract SimpleBank {
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract SimpleBank is ReentrancyGuard {
     
     struct Customer {
         bool enrolled;
@@ -58,14 +60,14 @@ contract SimpleBank {
     /// @notice Withdraw ether from bank
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
-    function withdraw(uint withdrawAmount) public shouldBeEnrolled returns (uint) {
+    function withdraw(uint withdrawAmount) public nonReentrant shouldBeEnrolled returns (uint) {
         require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
         return _doWithdraw(withdrawAmount);
     }
 
     /// @notice Withdraw remaining ether from bank
     /// @return bool transaction success
-    function withdrawAll() public shouldBeEnrolled returns (bool) {
+    function withdrawAll() public nonReentrant shouldBeEnrolled returns (bool) {
         require(clients[msg.sender].balance > 0, "Insufficient funds");
         withdraw(clients[msg.sender].balance);
         return true;
@@ -78,6 +80,8 @@ contract SimpleBank {
         clients[msg.sender].balance = newBalance;
 
         (bool sent, ) = msg.sender.call{value: withdrawAmount}("");
+        
+        require(sent, "Failed to send Ether");
         
         return newBalance;
     }
