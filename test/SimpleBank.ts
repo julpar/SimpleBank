@@ -90,9 +90,9 @@ describe("SimpleBank", function () {
 
       let depositAmount = await ethers.utils.parseEther("1.0");
 
-      expect(await sut.deposit({
+      await sut.deposit({
         value: depositAmount
-      }))
+      });
 
       expect(await sut.getBalance()).to.equal(depositAmount);
     });

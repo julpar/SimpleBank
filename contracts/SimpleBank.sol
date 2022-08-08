@@ -64,26 +64,27 @@ contract SimpleBank is ReentrancyGuard {
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
     function withdraw(uint withdrawAmount) public nonReentrant shouldBeEnrolled amountShouldnBeZero(withdrawAmount) returns (uint) {
-        require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
         return _doWithdraw(withdrawAmount);
     }
 
     /// @notice Withdraw remaining ether from bank
     /// @return bool transaction success
-    function withdrawAll() public  shouldBeEnrolled returns (bool) {
-        require(clients[msg.sender].balance > 0, "Insufficient funds");
+    function withdrawAll() public shouldBeEnrolled returns (bool) {
         withdraw(clients[msg.sender].balance);
         return true;
     }
     
     function _doWithdraw(uint withdrawAmount) internal returns (uint) {
+
+        require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
+        
         uint newBalance = clients[msg.sender].balance - withdrawAmount;
 
         emit LogWithdrawalMade(msg.sender, withdrawAmount, newBalance);
         clients[msg.sender].balance = newBalance;
 
         (bool sent, ) = msg.sender.call{value: withdrawAmount}("");
-        
+
         require(sent, "Failed to send Ether");
         
         return newBalance;
