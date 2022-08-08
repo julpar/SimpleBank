@@ -19,12 +19,16 @@ contract SimpleBank is ReentrancyGuard {
     event LogWithdrawalMade(address _accountAddress, uint256 _amount, uint256 _newBalance);
     
     constructor() {
-        /* Set the owner to the creator of this contract */
         owner = msg.sender;
     }
     
     modifier shouldBeEnrolled() {
         require(clients[msg.sender].enrolled == true, "Account is not enrolled");
+        _;
+    }
+
+    modifier amountShouldnBeZero(uint _amount) {
+        require (_amount > 0, "Amount must be greater than 0");
         _;
     }
     
@@ -50,8 +54,7 @@ contract SimpleBank is ReentrancyGuard {
 
     /// @notice Deposit ether into bank
     /// @return The balance of the user after the deposit is made
-    function deposit() public shouldBeEnrolled payable returns (uint) {
-        require(msg.value > 0, "Deposit must be greater than 0");
+    function deposit() public shouldBeEnrolled amountShouldnBeZero(msg.value) payable returns (uint) {
         emit LogDepositMade(msg.sender, msg.value);
         clients[msg.sender].balance += msg.value;
         return clients[msg.sender].balance;
@@ -60,7 +63,7 @@ contract SimpleBank is ReentrancyGuard {
     /// @notice Withdraw ether from bank
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
-    function withdraw(uint withdrawAmount) public nonReentrant shouldBeEnrolled returns (uint) {
+    function withdraw(uint withdrawAmount) public nonReentrant shouldBeEnrolled amountShouldnBeZero(withdrawAmount) returns (uint) {
         require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
         return _doWithdraw(withdrawAmount);
     }
