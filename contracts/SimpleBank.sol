@@ -60,21 +60,26 @@ contract SimpleBank {
     /// @return The balance remaining for the user
     function withdraw(uint withdrawAmount) public shouldBeEnrolled returns (uint) {
         require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
-        uint newBalance = clients[msg.sender].balance - withdrawAmount;
-    
-        emit LogWithdrawalMade(msg.sender, withdrawAmount, newBalance);
-        clients[msg.sender].balance = newBalance;
-        return newBalance;
+        return _doWithdraw(withdrawAmount);
     }
 
     /// @notice Withdraw remaining ether from bank
     /// @return bool transaction success
-    // Emit the appropriate event
     function withdrawAll() public shouldBeEnrolled returns (bool) {
         require(clients[msg.sender].balance > 0, "Insufficient funds");
-        emit LogWithdrawalMade(msg.sender, clients[msg.sender].balance, 0);
-        clients[msg.sender].balance = 0;
+        withdraw(clients[msg.sender].balance);
         return true;
+    }
+    
+    function _doWithdraw(uint withdrawAmount) internal returns (uint) {
+        uint newBalance = clients[msg.sender].balance - withdrawAmount;
+
+        emit LogWithdrawalMade(msg.sender, withdrawAmount, newBalance);
+        clients[msg.sender].balance = newBalance;
+
+        (bool sent, ) = msg.sender.call{value: withdrawAmount}("");
+        
+        return newBalance;
     }
 
     /// @notice Check for enrolled status
