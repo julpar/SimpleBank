@@ -30,7 +30,7 @@ describe("SimpleBank", function () {
 
       expect(await sut.isEnrolled(owner.address)).false;
       
-      sut.enroll();
+      await sut.enroll();
 
       expect(await sut.isEnrolled(owner.address)).true;
     });
@@ -56,7 +56,7 @@ describe("SimpleBank", function () {
     it("Check balance for an enrolled account", async function () {
       const { sut, owner } = await loadFixture(deployContract);
 
-      sut.enroll();
+      await sut.enroll();
 
       expect(await sut.getBalance()).to.equal(0);
     });
@@ -76,7 +76,7 @@ describe("SimpleBank", function () {
     it("Make a deposit with zero amount", async function () {
       const { sut, owner } = await loadFixture(deployContract);
 
-      sut.enroll();
+      await sut.enroll();
       
       expect(sut.deposit({ value: 0 })).to.be.revertedWith(
           "Amount must be greater than 0"
@@ -86,7 +86,7 @@ describe("SimpleBank", function () {
     it("Make a deposit and check balance", async function () {
       const { sut, owner } = await loadFixture(deployContract);
       
-      sut.enroll();
+      await sut.enroll();
 
       let depositAmount = await ethers.utils.parseEther("1.0");
 
@@ -98,5 +98,33 @@ describe("SimpleBank", function () {
     });
 
   });
-  
+
+  describe("Withdraw", function () {
+
+    it("Withdraw not being enrolled", async function () {
+      const { sut } = await loadFixture(deployContract);
+
+      await expect(sut.withdraw(await ethers.utils.parseEther("1.0"))).to.be.revertedWith(
+          "Account is not enrolled"
+      );
+    });
+
+    it("Withdraw a zero amount", async function () {
+      const { sut, owner } = await loadFixture(deployContract);
+
+      await sut.enroll();
+
+      let depositAmount = await ethers.utils.parseEther("1.0");
+
+      await sut.deposit({
+        value: depositAmount
+      });
+      
+      await expect(sut.withdraw(0)).to.be.revertedWith(
+          "Amount must be greater than 0"
+      );
+    });
+
+  });
+
 });

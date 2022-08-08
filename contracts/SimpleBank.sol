@@ -70,7 +70,7 @@ contract SimpleBank is ReentrancyGuard {
 
     /// @notice Withdraw remaining ether from bank
     /// @return bool transaction success
-    function withdrawAll() public nonReentrant shouldBeEnrolled returns (bool) {
+    function withdrawAll() public  shouldBeEnrolled returns (bool) {
         require(clients[msg.sender].balance > 0, "Insufficient funds");
         withdraw(clients[msg.sender].balance);
         return true;
