@@ -125,6 +125,35 @@ describe("SimpleBank", function () {
       );
     });
 
-  });
+    it("Withdraw specified amount successfully", async function () {
+      const { sut, owner } = await loadFixture(deployContract);
 
+      await sut.enroll();
+      let depositAmount = await ethers.utils.parseEther("2.0");
+      
+      await sut.deposit({value: depositAmount});
+
+      let withdrawAmount = await ethers.utils.parseEther("1.0");
+      
+      await sut.withdraw(withdrawAmount);
+      
+      expect(await sut.getBalance()).to.equal(depositAmount.sub(withdrawAmount));
+      
+    });
+
+
+    it("Withdraw all funds successfully", async function () {
+      const { sut } = await loadFixture(deployContract);
+
+      await sut.enroll();
+      let depositAmount = await ethers.utils.parseEther("2.0");
+      
+      await sut.deposit({value: depositAmount});
+
+      await sut.withdrawAll();
+      
+      expect(await sut.getBalance()).to.equal(0);
+    });
+
+  });
 });
