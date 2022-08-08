@@ -5,16 +5,26 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+jobs:
+  start-hardhat-node:
+    runs-on: ubuntu-latest
 
-runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
 
-steps:
-  - uses: actions/checkout@v2
+      steps:
+        - uses: actions/checkout@v2
 
-  - name: Install deps
-    run: npm install
-
-  - name: Run Testsuite
-    continue-on-error: false
-    run: |
-      npx hardhat test
+        - name: Use Node.js ${{ matrix.node-version }}
+          uses: actions/setup-node@v3
+          with:
+            node-version: ${{ matrix.node-version }}
+            
+        - name: Install deps
+          run: npm install
+      
+        - name: Run Testsuite
+          continue-on-error: false
+          run: |
+            npx hardhat test
