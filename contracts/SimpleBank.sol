@@ -2,10 +2,13 @@
 pragma solidity 0.8.4;
 
 contract SimpleBank {
-
-    // Main states
-    mapping(address => uint256) private balances;
-    mapping(address => bool) private enrolled;
+    
+    struct Customer {
+        bool enrolled;
+        uint balance;
+    }
+    
+    mapping(address => Customer) private clients;
     address public owner;
     
     //Events
@@ -19,7 +22,7 @@ contract SimpleBank {
     }
     
     modifier shouldBeEnrolled() {
-        require(enrolled[msg.sender] == true, "Account is not enrolled");
+        require(clients[msg.sender].enrolled == true, "Account is not enrolled");
         _;
     }
     
@@ -30,40 +33,37 @@ contract SimpleBank {
     /// @notice Get balance
     /// @return The balance of the user
     function getBalance() shouldBeEnrolled external view returns (uint256) {
-        return balances[msg.sender];
+        return clients[msg.sender].balance;
     }
 
     /// @notice Enroll a customer with the bank
     /// @return The users enrolled status
     // Emit the appropriate event
     function enroll() public returns (bool) {
-        require(!enrolled[msg.sender], "User already enrolled");
+        require(!clients[msg.sender].enrolled, "User already enrolled");
         emit LogEnrolled(msg.sender);
-        enrolled[msg.sender] = true;
+        clients[msg.sender].enrolled = true;
         return true;
     }
 
     /// @notice Deposit ether into bank
     /// @return The balance of the user after the deposit is made
-    // This function can receive ether
-    // Users should be enrolled before they can make deposits
     function deposit() public shouldBeEnrolled payable returns (uint) {
         require(msg.value > 0, "Deposit must be greater than 0");
         emit LogDepositMade(msg.sender, msg.value);
-        balances[msg.sender] += msg.value;
-        return balances[msg.sender];
+        clients[msg.sender].balance += msg.value;
+        return clients[msg.sender].balance;
     }
 
     /// @notice Withdraw ether from bank
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
-    // Emit the appropriate event
     function withdraw(uint withdrawAmount) public shouldBeEnrolled returns (uint) {
-        require(balances[msg.sender] >= withdrawAmount, "Insufficient funds");
-        uint newBalance = balances[msg.sender] - withdrawAmount;
+        require(clients[msg.sender].balance >= withdrawAmount, "Insufficient funds");
+        uint newBalance = clients[msg.sender].balance - withdrawAmount;
     
         emit LogWithdrawalMade(msg.sender, withdrawAmount, newBalance);
-        balances[msg.sender] = newBalance;
+        clients[msg.sender].balance = newBalance;
         return newBalance;
     }
 
@@ -71,15 +71,15 @@ contract SimpleBank {
     /// @return bool transaction success
     // Emit the appropriate event
     function withdrawAll() public shouldBeEnrolled returns (bool) {
-        require(balances[msg.sender] > 0, "Insufficient funds");
-        emit LogWithdrawalMade(msg.sender, balances[msg.sender], 0);
-        balances[msg.sender] = 0;
+        require(clients[msg.sender].balance > 0, "Insufficient funds");
+        emit LogWithdrawalMade(msg.sender, clients[msg.sender].balance, 0);
+        clients[msg.sender].balance = 0;
         return true;
     }
 
     /// @notice Check for enrolled status
     /// @return bool if address is enrolled
     function isEnrolled(address _address) public view returns (bool) {
-        return enrolled[_address] == true;
+        return clients[_address].enrolled == true;
     }
 }
