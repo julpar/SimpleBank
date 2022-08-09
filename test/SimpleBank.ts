@@ -89,10 +89,11 @@ describe("SimpleBank", function () {
       await sut.enroll();
 
       let depositAmount = await ethers.utils.parseEther("1.0");
-
-      await sut.deposit({
-        value: depositAmount
-      });
+      
+      await expect(await sut.deposit({value: depositAmount })).to.changeEtherBalances(
+          [sut, owner],
+          [depositAmount, depositAmount.mul(-1)]
+      );
 
       expect(await sut.getBalance()).to.equal(depositAmount);
     });
@@ -134,8 +135,11 @@ describe("SimpleBank", function () {
       await sut.deposit({value: depositAmount});
 
       let withdrawAmount = await ethers.utils.parseEther("1.0");
-      
-      await sut.withdraw(withdrawAmount);
+
+      await expect(await sut.withdraw(withdrawAmount)).to.changeEtherBalances(
+          [owner, sut],
+          [withdrawAmount, withdrawAmount.mul(-1)]
+      );
       
       expect(await sut.getBalance()).to.equal(depositAmount.sub(withdrawAmount));
       
@@ -143,14 +147,17 @@ describe("SimpleBank", function () {
 
 
     it("Withdraw all funds successfully", async function () {
-      const { sut } = await loadFixture(deployContract);
+      const { sut, owner } = await loadFixture(deployContract);
 
       await sut.enroll();
       let depositAmount = await ethers.utils.parseEther("2.0");
       
       await sut.deposit({value: depositAmount});
 
-      await sut.withdrawAll();
+      await expect(await sut.withdrawAll()).to.changeEtherBalances(
+          [owner, sut],
+          [depositAmount, depositAmount.mul(-1)]
+      );
       
       expect(await sut.getBalance()).to.equal(0);
     });
