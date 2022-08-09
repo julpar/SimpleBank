@@ -206,4 +206,35 @@ describe("SimpleBank", function () {
         });
       });
   });
+
+  describe("Direct Call", function () {
+
+    it("Fail while trying to send ethers via call without enroll", async function () {
+      const {sut, owner} = await loadFixture(deployContract);
+
+      let tx = {
+        to: sut.address,
+        value: ethers.utils.parseEther("1")
+      }
+
+      expect(owner.sendTransaction(tx)).to.be.revertedWith(
+          "Account is not enrolled"
+      );
+    });
+
+    it("Receive ethers via call", async function () {
+      const {sut, owner} = await loadFixture(deployContract);
+
+      await sut.enroll();
+      
+      let tx = {
+        to: sut.address,
+        value: ethers.utils.parseEther("1")
+      }
+
+      expect(owner.sendTransaction(tx)).to.emit(sut, "LogDepositMade")
+    });
+
+  });
+  
 });

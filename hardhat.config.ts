@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
     enabled: true,
     currency: 'USD',
     coinmarketcap: 'a07c15b1-4a76-4976-b458-48944dc065d0',
-    token: 'BNB',
+    token: 'ETH',
     gasPriceApi: 'https://api.bscscan.com/api?module=proxy&action=eth_gasPrice',
     showTimeSpent: true,
   },
