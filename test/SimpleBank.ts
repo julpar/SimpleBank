@@ -98,6 +98,20 @@ describe("SimpleBank", function () {
       expect(await sut.getBalance()).to.equal(depositAmount);
     });
 
+    it("Make a deposit emit event", async function () {
+      const { sut, owner } = await loadFixture(deployContract);
+
+      await sut.enroll();
+
+      let depositAmount = await ethers.utils.parseEther("1.0");
+
+      expect(await sut.deposit({value: depositAmount }))
+          .to.emit(sut, "LogDepositMade")
+          .withArgs( owner.address, depositAmount);
+      
+      expect(await sut.getBalance()).to.equal(depositAmount);
+    });
+    
   });
 
   describe("Withdraw", function () {
