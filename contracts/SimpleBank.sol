@@ -64,6 +64,7 @@ contract SimpleBank is ReentrancyGuard {
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
     function withdraw(uint withdrawAmount) public nonReentrant shouldBeEnrolled amountShouldnBeZero(withdrawAmount) returns (uint) {
+
         return _doWithdraw(withdrawAmount);
     }
 

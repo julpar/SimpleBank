@@ -161,6 +161,25 @@ describe("SimpleBank", function () {
       
       expect(await sut.getBalance()).to.equal(0);
     });
+    
+    it("Withdraw more than deposited", async function () {
+      const { sut } = await loadFixture(deployContract);
+
+      await sut.enroll();
+
+      let depositAmount = await ethers.utils.parseEther("1.0");
+
+      await sut.deposit({value: depositAmount});
+
+      expect(await sut.getBalance()).to.equal(await ethers.utils.parseEther("1.0"));
+
+      let moreThanDeposited = await ethers.utils.parseEther("2")
+      
+      expect(sut.withdraw(moreThanDeposited)).to.be.revertedWith(
+          "Insufficient funds"
+      );
+      
+    });
 
   });
 });
