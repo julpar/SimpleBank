@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  coverage-report:
+    runs-on: ubuntu-latest
+    name: HardHat Coverage Report
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+                  
+      - run: npm install
+          
+      - run: npx hardhat coverage
+        
+      - name: Coverage report
+        uses: eleboys/test-coverage-report-action@v1.0.2
+        id: report
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: coverage/coverage-final.json
+          title: Hardhat Test Coverage
+
+      - name: Print the output summary
+        run: echo "Report coverage json ${{ steps.report.outputs.summary }}"        
